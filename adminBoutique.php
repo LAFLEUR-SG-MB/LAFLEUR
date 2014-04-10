@@ -64,73 +64,8 @@
 									<input type="submit" name="envoie" value="Valider"/>
 						
 							</form>
-							<i>Ici vous pourrez ajouter vos administrateurs de boutiques.</i><br/>
-							<form method="post" action="adminBoutique.php" id="ajoutAB">
-								loginUtilisateur:<input type="text" name="loginUtilisateur"/><br/>
-								mdpUtilisateur:<input type="text" name="mdpUtilisateur"/><br/>
-								statusUtilisateur:<input type="radio" name="status">AdminBoutique</input>
-								</select>
-								<input type="reset" name="effacer" />	
-								<input type="submit" name="créerA" />
-							</form><br/><br/>
-							<?php 
-								if ( isset($_POST['créer']) ) {
-									if ( isset($_POST['nom']) && isset($_POST['rue'])  && isset($_POST['cp']) && isset($_POST['ville']) && isset($_POST['image']) && isset($_POST['telephone']) && isset($_POST['horaires'])) {
-										$nom = $_POST['nom'];
-										$rue = $_POST['rue'];
-										$cp = $_POST['cp'];
-										$ville = $_POST['ville'];
-										$image = $_FILES['image']['name'];
-										$telephone = $_POST['telephone'];
-										$horaires = $_POST['horaires'];
-										try {
-											
-											$ajoutReq = $bdd->prepare('INSERT INTO boutiques VALUES (\'\', :nom, :rue, :cp, :ville, :image, :telephone, :horaires)');
-											$ajoutReq->execute( array(
-													'nom' => $nom,
-													'rue' => $rue,
-													'cp' => $cp,
-													'ville' => $ville,
-													'image' => $image,
-													'telephone' => $telephone,
-													'horaires' => $horaires
-											));
-											$derniereBoutique = $bdd->lastInsertId();
-											echo '<h4>Votre nouvel Boutique a bien été enregistré sous le numéro '.$derniereBoutique.'</h4>';
-										}
-										catch (Exception $erreur) {
-											die('Il y a une erreur avec la BDD : '.$erreur->getMessage());
-										}
-									}
-								}
-								if ( isset($_POST['créerA']) ) {
-									if ( isset($_POST['loginUtilisateur']) && isset($_POST['mdpUtilisateur']) && isset($_POST['statusUtilisateur'])) {
-										$loginUtilisateur = $_POST['loginUtilisateur'];
-										$mdpUtilisateur = $_POST['mdpUtilisateur'];
-										$statusUtilisateur = $_POST['statusUtilisateur'];
-										try {
-												
-											$ajoutReq = $bdd->prepare('INSERT INTO administration VALUES (\'\', :loginUtilisateur, MD5(:mdpUtilisateur), :statusUtilisateur)');
-											$ajoutReq->execute( array(
-													'loginUtilisateur' => $loginUtilisateur,
-													'mdpUtilisateur' => $mdpUtilisateur,
-													'statusUtilisateur' => $statusUtilisateur
-											));
-										$nbLigne = $ajoutReq->rowCount();
-										echo'Votre nouvel administrateur de boutique à été créer sous.'.$nbLigne;
-				
-										}
-										catch (Exception $erreur) {
-											die('Il y a une erreur avec la BDD : '.$erreur->getMessage());
-										}
-									}
-								}
-								
-							?>
 							<?php
 								try {
-									$pdo_options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
-									$bdd = new PDO('mysql:host='.$ServeurBDD.';dbname='.$nomBDD, $utilBDD, $mdpUtilBDD);
 									$reponseReq = $bdd->query('SELECT * FROM administration');
 									echo '<table>';
 									echo '<tr><td>Login</td><td>Mot de passe</td><td>Status</td>';
@@ -149,6 +84,81 @@
 								}
 								
 						?>
+						<?php 
+						/*				if(isset($_GET['id']))	{
+												try {
+													$pdo_options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
+													$bdd = new PDO('mysql:host='.$ServeurBDD.';dbname='.$nomBDD, $utilBDD, $mdpUtilBDD);
+													$reponseReq = $bdd->query('SELECT * FROM boutiques WHERE id='.$_GET['id']);
+													echo '<table class="tableauboutiques">';
+													echo '<tr><th>NOM</th><th>RUE</th><th>CP</th><th>VILLE</th>';
+													echo '<th>IMAGE</th></tr>';
+													while ($donnees = $reponseReq->fetch()){
+														echo '<tr>';
+														echo '<td>'.$donnees['nom'].'</td>';
+														echo '<td>'.$donnees['rue'].'</td>';
+														echo '<td>'.$donnees['cp'].'</td>';
+														echo '<td>'.$donnees['ville'].'</td>';
+														echo '<td><img style="width:150px" src="image_s/boutiques/boutique_'.$donnees['ville'].'.jpg"/></td>';
+														echo '</tr>';
+													}
+													echo '</table>';
+													echo'</br></br>';
+													$reponseReq2 = $bdd->query('SELECT telephone,horaires FROM boutiques WHERE id ='.$_GET['id']);
+													echo'<table class="telhoraire">';
+													echo '<tr><th>TELEPHONE</th><th>HORAIRES</th></tr></br>';
+													while($donnees = $reponseReq2->fetch()){
+														echo '<td>'.$donnees['telephone'].'</td>';
+														echo '<td>'.$donnees['horaires'].'</td>';
+													}
+													echo'</tr>';
+												}
+												catch (Exception $erreur) {
+													die('Il y a une erreur avec la BDD : '.$erreur->getMessage());
+												}
+										}*/
+	$reponseReq = $bdd->query('SELECT * FROM boutiques');
+?>
+						</form>
+							<i>Ici vous pourrez ajouter vos administrateurs de boutiques.</i><br/>
+							<form method="post" action="adminBoutique.php" id="ajoutAB">
+								Login de l'Utilisateur:<input type="text" name="loginUtilisateur"/><br/>
+								Mot de passe de l'Utilisateur:<input type="text" name="mdpUtilisateur"/><br/>
+								Choississez votre boutique à administrer :
+								<select name="ville" id="ville">
+								<?php
+								while ($donnees = $reponseReq->fetch()){?>
+									<option value="<?php echo $donnees['id'];?>"><?php echo $donnees['nom']." - ".$donnees['ville'];?></option>
+								<?php }?>
+								</select><br/>
+								<br/>
+								<input type="reset" name="effacer" />	
+								<input type="submit" name="créerA" />
+							</form><br/><br/>
+							<?php 
+								if ( isset($_POST['créerA']) ) {
+									if ( isset($_POST['loginUtilisateur']) && isset($_POST['mdpUtilisateur'])) {
+										$loginUtilisateur = $_POST['loginUtilisateur'];
+										$mdpUtilisateur = $_POST['mdpUtilisateur'];
+										$villeUtilisateur = $_POST['ville'];
+										try {
+											
+											$ajoutReq = $bdd->prepare('INSERT INTO administration VALUES (:login, MD5(:mdp), :status,:idBout)');
+											$ajoutReq->execute( array(
+													'login' => $loginUtilisateur,
+													'mdp' => $mdpUtilisateur,
+													'idBout' => $villeUtilisateur,
+													'status' => 'AB'
+											));
+											echo '<h4>Votre nouvel Admin a bien été enregistré</h4>';
+										}
+										catch (Exception $erreur) {
+											die('Il y a une erreur avec la BDD : '.$erreur->getMessage());
+										}
+									}
+								}
+								
+							?>
 							<br/><br/>
 							
 							</div>
